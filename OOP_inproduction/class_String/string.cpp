@@ -1,18 +1,21 @@
 #include <cstring>
 #include <iostream>
 
+class String;
+String operator+(const String& first, const String& second);
+
 class String {
     int size_;
     char* cstr_;
 
 public:
 
-    String(int size = 80) : size_(size) , cstr_(new char[size]) {}
+    explicit String(int size = 80) : size_(size) , cstr_(new char[size]) {}
     
     String(const char* cstr) : size_(std::strlen(cstr)+1) {
         cstr_ = new char[size_];
-        for (size_t j = 0; j < size_; ++j) {
-            cstr_[j] = cstr[j];
+        for (size_t i = 0; i < size_; ++i) {
+            cstr_[i] = cstr[i];
         }
     }
     
@@ -26,6 +29,7 @@ public:
         if (this == &other) return *this;
         delete [] cstr_;
         size_ = other.size_;
+        cstr_ = new char[size_];
         for (size_t i = 0; i < size_; ++i) {
             cstr_[i] = other.cstr_[i];
         }
@@ -46,18 +50,20 @@ public:
 
 };
 
-String& operator+(const String& first, const String& second) {
+String operator+(const String& first, const String& second) {
     String result(first.get_size()+second.get_size());
     for (size_t i = 0; i < first.get_size(); ++i) {
         result.get_cstr()[i] = first.get_cstr()[i];
     }
-    for (size_t i = first.get_size()-1; i < second.get_size(); ++i){
-        result.get_cstr()[i] = second.get_cstr()[i];
+    for (size_t i = first.get_size()-1, j = 0; i < second.get_size(); ++i,++j){
+        result.get_cstr()[i] = second.get_cstr()[j];
     }
+    return result;
 }
 
-std::ostream& operator<<(std::ostream &  os, const String & str) {
-    return os << str.get_cstr();
+std::ostream& operator<<(std::ostream & os, const String & str) {
+    os << str.get_cstr();
+    return os;
 }
 
 std::istream& operator>>(std::istream& is, String & str) {

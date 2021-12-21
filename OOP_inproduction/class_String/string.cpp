@@ -1,8 +1,5 @@
 #include "string.hpp"
 
-class String;
-String operator+(const String &first, const String &second);
-
 String::String(int size) : size_(size), cstr_(new char[size]) {}
 
 String::String(const char *cstr) : size_(std::strlen(cstr) + 1)

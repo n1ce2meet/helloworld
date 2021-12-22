@@ -248,7 +248,7 @@ int main()
 
     Matrix<double> m1(r, 4, 4);
     std::cout << m1;
-    Matrix<double> m2(1, 5, 5);
+    Matrix<double> m2(5, 5);
     std::cout << m2;
     Matrix<double> m3(m2);
     std::cout << m3;

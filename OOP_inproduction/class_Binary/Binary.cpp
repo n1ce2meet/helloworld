@@ -250,12 +250,9 @@ Binary operator*(const Binary &left, const Binary &right)
     return result;
 }
 
-Binary operator/(const Binary &left, const Binary &right)
-{
-    if (!right) throw "Zero division error";
-    Binary result{};
-    for(size_t i = 0; i < static_cast<int>(right); ++i) {
-        result = result + result;
-    }
-    return result;
-}
+// Binary operator/(const Binary &left, const Binary &right)
+// {
+//     if (!right) throw "Zero division error";
+//     Binary result{};
+//     return result;
+// }

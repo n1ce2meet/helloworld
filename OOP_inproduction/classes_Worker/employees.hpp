@@ -109,8 +109,8 @@ void Worker::read(std::ifstream &file)
 
 void Worker::write(std::ofstream &file)
 {
-    size_t nameSize = sizeof(name_.c_str());
-    size_t positionSize = sizeof(position_.c_str());
+    size_t nameSize = name_.size();
+    size_t positionSize = position_.size();
     file.write(reinterpret_cast<char *>(&nameSize), sizeof(size_t));
     file.write(name_.c_str(), nameSize);
     file.write(reinterpret_cast<char *>(&positionSize), sizeof(size_t));

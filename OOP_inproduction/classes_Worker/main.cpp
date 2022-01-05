@@ -1,11 +1,10 @@
 #include <iostream>
-#include <fstream>
 #include "employees.hpp"
 
-int calculateDepartmentSalary(const Worker **department)
+int calculateDepartmentSalary(Worker **department)
 {
     int result = 0;
-    for (size_t i = 0; i < sizeof(department) / sizeof(Worker); ++i)
+    for (size_t i = 0; i < sizeof(department); ++i)
     {
         result += department[i]->calculateSalary();
     }
@@ -30,13 +29,19 @@ int main()
 
     std::cout << "Total by department 1: " << calculateDepartmentSalary(dep1) << std::endl;
 
-    std::fstream file;
-    file.open("test.txt", std::ios::binary);
-    file.write(reinterpret_cast<char *>(SIZE), sizeof(int));
-    for (size_t i = 0; i < SIZE; ++i)
-    {
-        file.write(reinterpret_cast<char*>(dep1[i]), sizeof(typeid(*dep1[i])));
+    for (size_t i = 0; i < SIZE; ++i) {
+        std::cout << dep1[i]->getName() << ", ";
     }
+    std::cout << std::endl;
 
-    // НЕЗАКОНЧЕНО
+    Storage s("test.txt");
+
+    s.store(dep1, SIZE);
+    
+    Worker ** dep1copy = s.readAll();
+
+    for (size_t i = 0; i < SIZE; ++i) {
+        std::cout << dep1copy[i]->getName() << ", ";
+    }
+    std::cout << std::endl;
 }

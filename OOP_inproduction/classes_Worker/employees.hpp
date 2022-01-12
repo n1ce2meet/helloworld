@@ -1,6 +1,7 @@
 #include <string>
 #include <fstream>
 #include <typeinfo>
+#include <iostream>
 
 #define WORKER_TAKE_PARAMETERS const std::string &name, const std::string &position, int age
 #define WORKER_GIVE_PARAMETERS name, position, age
@@ -32,6 +33,7 @@ public:
     virtual int calculateSalary() const = 0;
     virtual void read(std::ifstream &file);
     virtual void write(std::ofstream &file);
+    virtual void print(std::ostream &os) const;
 };
 
 class Pieceworker : public Worker
@@ -49,6 +51,7 @@ public:
     int calculateSalary() const override;
     void read(std::ifstream &file) override;
     void write(std::ofstream &file) override;
+    void print(std::ostream &os) const override;
 };
 
 class Employee : public Worker
@@ -63,6 +66,7 @@ public:
     int calculateSalary() const override;
     void read(std::ifstream &file) override;
     void write(std::ofstream &file) override;
+    void print(std::ostream &os) const override;
 };
 
 class Storage
@@ -97,7 +101,7 @@ void Worker::read(std::ifstream &file)
 {
     size_t nameSize;
     size_t positionSize;
-    char *tmp;
+    char tmp[256]{};
     file.read(reinterpret_cast<char *>(&nameSize), sizeof(size_t));
     file.read(tmp, nameSize);
     name_ = tmp;
@@ -116,6 +120,11 @@ void Worker::write(std::ofstream &file)
     file.write(reinterpret_cast<char *>(&positionSize), sizeof(size_t));
     file.write(position_.c_str(), positionSize);
     file.write(reinterpret_cast<char *>(&age_), sizeof(int));
+}
+
+void Worker::print(std::ostream &os) const
+{
+    os << name_ << ' ' << position_ << ' ' << age_ << std::endl;
 }
 
 Pieceworker::Pieceworker() : Worker() {}
@@ -147,6 +156,12 @@ void Pieceworker::write(std::ofstream &file)
     file.write(reinterpret_cast<char *>(&workTime_), sizeof(int));
 }
 
+void Pieceworker::print(std::ostream &os) const
+{
+    Worker::print(os);
+    os << paymentPerHour_ << ' ' << workTime_ << std::endl;
+}
+
 Employee::Employee() : Worker() {}
 
 Employee::Employee(WORKER_TAKE_PARAMETERS, int salary) : Worker(WORKER_GIVE_PARAMETERS), salary_(salary) {}
@@ -167,6 +182,12 @@ void Employee::write(std::ofstream &file)
 {
     Worker::write(file);
     file.write(reinterpret_cast<char *>(&salary_), sizeof(int));
+}
+
+void Employee::print(std::ostream &os) const
+{
+    Worker::print(os);
+    os << salary_ << std::endl;
 }
 
 Storage::Storage(const std::string &fileName) : fileName_(fileName) {}
@@ -243,4 +264,10 @@ TYPES Storage::getType(const Worker *obj)
         return TYPES::Tpieceworker;
     }
     return TYPES::Temployee;
+}
+
+std::ostream &operator<<(std::ostream &os, const Worker &obj)
+{
+    obj.print(os);
+    return os;
 }

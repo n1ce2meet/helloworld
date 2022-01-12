@@ -30,7 +30,7 @@ int main()
     std::cout << "Total by department 1: " << calculateDepartmentSalary(dep1) << std::endl;
 
     for (size_t i = 0; i < SIZE; ++i) {
-        std::cout << dep1[i]->getName() << ", ";
+        std::cout << *dep1[i] << "\n";
     }
     std::cout << std::endl;
 
@@ -41,7 +41,8 @@ int main()
     Worker ** dep1copy = s.readAll();
 
     for (size_t i = 0; i < SIZE; ++i) {
-        std::cout << dep1copy[i]->getName() << ", ";
+        std::cout << *dep1copy[i] << "\n";
     }
     std::cout << std::endl;
+
 }

@@ -2,6 +2,8 @@
 #include <array>
 #include <cmath>
 
+static constexpr double PI = 3.1415;
+
 struct Point3D
 {
     float x_;
@@ -65,8 +67,6 @@ class Circle : public Shape
     size_t radius_;
 
 public:
-    static constexpr double PI = 3.1415;
-
     Circle(size_t radius) : radius_(radius) {}
     Circle(const Circle &) = default;
     Circle(Circle &&) = default;
@@ -89,14 +89,32 @@ class Triangle : public Shape
 {
     std::array<Point3D, 3> vertices_;
     std::array<double, 3> sides_;
+    std::array<double, 3> angle_;
+
+    double calculate_angle_(double &sideA, double &sideB, double &sideC) // теорема косинусов
+    {
+        double resultInRad;
+        resultInRad = ((sideA * sideA + sideB * sideB) - sideC * sideC) / 2 * sideA * sideB;
+        return std::cos(resultInRad * PI / 180);
+    }
+
+    double calculate_side_(const Point3D &first, const Point3D second)
+    {
+        return std::sqrt(std::pow((first.x_ - second.x_), 2) + std::pow((first.y_ - second.y_), 2));
+    }
 
 public:
     Triangle(std::array<Point3D, 3> &&points) : vertices_(points)
     {
-        sides_[0] = std::sqrt(std::pow((vertices_[0].x_ - vertices_[1].x_), 2) + std::pow((vertices_[0].y_ - vertices_[1].y_), 2));
-        sides_[1] = std::sqrt(std::pow((vertices_[0].x_ - vertices_[2].x_), 2) + std::pow((vertices_[0].y_ - vertices_[2].y_), 2));
-        sides_[2] = std::sqrt(std::pow((vertices_[1].x_ - vertices_[2].x_), 2) + std::pow((vertices_[1].y_ - vertices_[2].y_), 2));
+        sides_[0] = calculate_side_(vertices_[0], vertices_[1]);
+        sides_[1] = calculate_side_(vertices_[0], vertices_[2]);
+        sides_[2] = calculate_side_(vertices_[1], vertices_[2]);
+
+        angle_[0] = calculate_angle_(sides_[0], sides_[1], sides_[2]);
+        angle_[1] = calculate_angle_(sides_[0], sides_[2], sides_[1]);
+        angle_[2] = calculate_angle_(sides_[1], sides_[2], sides_[0]);
     }
+
     Triangle(const Triangle &) = default;
     Triangle(Triangle &&) = default;
 
@@ -106,7 +124,7 @@ public:
     virtual double area() const override
     {
         double p = this->perimeter() / 2;
-        return std::sqrt(p*(p-sides_[0])*(p-sides_[1])*(p-sides_[2]));
+        return std::sqrt(p * (p - sides_[0]) * (p - sides_[1]) * (p - sides_[2]));
     }
 
     virtual double perimeter() const override
@@ -118,11 +136,39 @@ public:
             result += i;
         }
 
-        return result;
+        return result; 
     }
 
     virtual std::string parameters() const override
     {
-        return ("Triangle. Sides: " + std::to_string(sides_[0]) + ' ' + std::to_string(sides_[1]) + ' ' + std::to_string(sides_[2]));
+        std::string name;
+        std::string sides("AB - " + std::to_string(sides_[0]) + ", AC - " + std::to_string(sides_[1]) + ", BC - " + std::to_string(sides_[2]));
+        std::string angles("alpha - " + std::to_string(angle_[0]) + ", beta - " + std::to_string(angle_[1]) + ", gamma - " + std::to_string(angle_[2]));
+
+        if (isRight())
+            name = "Right triangle.";
+        else if (isIsosceles())
+            name = "Isosceles triangle.";
+        else if (isEquilateral())
+            name = "Equilateral triangle.";
+        else
+            name = "Free triangle.";
+
+        return (name + "Sides: " + sides + "\n\t Angles: " + angles);
+    }
+
+    bool isRight() const
+    {
+        return angle_[0] == 90 or angle_[1] == 90 or angle_[2] == 90;
+    }
+
+    bool isIsosceles() const
+    {
+        return sides_[0] == sides_[1] or sides_[0] == sides_[2] or sides_[1] == sides_[2];
+    }
+
+    bool isEquilateral() const
+    {
+        return sides_[0] == sides_[1] and sides_[0] == sides_[2];
     }
 };

@@ -46,11 +46,13 @@ public:
 
 class Square : public Rectangle
 {
+public:
     Square(size_t size) : Rectangle(size, size) {}
-    Square(const Square &other) : Rectangle(other) {}
-    Square(Square &&other) : Rectangle(other) {}
+    Square(const Square &) = default;
+    Square(Square &&) = default;
 
-    using Rectangle::operator=;
+    Square &operator=(const Square &) = default;
+    Square &operator=(Square &&) = default;
 
     virtual std::string parameters() const override
     {

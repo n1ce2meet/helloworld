@@ -1,4 +1,3 @@
-#include <iostream>
 #include "employees.hpp"
 
 int calculateDepartmentSalary(Worker **department)
@@ -45,4 +44,7 @@ int main()
     }
     std::cout << std::endl;
 
+    Employee input_test{};
+    std::cin >> input_test;
+    std::cout << input_test;
 }

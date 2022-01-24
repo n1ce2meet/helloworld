@@ -31,8 +31,9 @@ public:
     void setAge(int age);
     int getAge() const;
     virtual int calculateSalary() const = 0;
-    virtual void read(std::ifstream &file);
-    virtual void write(std::ofstream &file);
+    virtual void read_from_file(std::ifstream &file);
+    virtual void write_to_file(std::ofstream &file);
+    virtual void read_from_input(std::istream &is);
     virtual void print(std::ostream &os) const;
 };
 
@@ -49,9 +50,10 @@ public:
     void setWorkTime(int hours);
     int getWorkTime() const;
     int calculateSalary() const override;
-    void read(std::ifstream &file) override;
-    void write(std::ofstream &file) override;
-    void print(std::ostream &os) const override;
+    virtual void read_from_file(std::ifstream &file) override;
+    virtual void write_to_file(std::ofstream &file) override;
+    virtual void read_from_input(std::istream &is) override;
+    virtual void print(std::ostream &os) const override;
 };
 
 class Employee : public Worker
@@ -64,9 +66,10 @@ public:
     void setSalary(int payment);
     int getSalary() const;
     int calculateSalary() const override;
-    void read(std::ifstream &file) override;
-    void write(std::ofstream &file) override;
-    void print(std::ostream &os) const override;
+    virtual void read_from_file(std::ifstream &file) override;
+    virtual void write_to_file(std::ofstream &file) override;
+    virtual void read_from_input(std::istream &is) override;
+    virtual void print(std::ostream &os) const override;
 };
 
 class Storage
@@ -97,7 +100,7 @@ void Worker::setAge(int age) { this->age_ = age; }
 
 int Worker::getAge() const { return age_; }
 
-void Worker::read(std::ifstream &file)
+void Worker::read_from_file(std::ifstream &file)
 {
     size_t nameSize;
     size_t positionSize;
@@ -111,7 +114,7 @@ void Worker::read(std::ifstream &file)
     file.read(reinterpret_cast<char *>(&age_), sizeof(int));
 }
 
-void Worker::write(std::ofstream &file)
+void Worker::write_to_file(std::ofstream &file)
 {
     size_t nameSize = name_.size();
     size_t positionSize = position_.size();
@@ -120,6 +123,11 @@ void Worker::write(std::ofstream &file)
     file.write(reinterpret_cast<char *>(&positionSize), sizeof(size_t));
     file.write(position_.c_str(), positionSize);
     file.write(reinterpret_cast<char *>(&age_), sizeof(int));
+}
+
+void Worker::read_from_input(std::istream &is)
+{
+    is >> name_ >> position_ >> age_;
 }
 
 void Worker::print(std::ostream &os) const
@@ -142,18 +150,24 @@ int Pieceworker::getWorkTime() const { return workTime_; }
 
 int Pieceworker::calculateSalary() const { return workTime_ * paymentPerHour_; }
 
-void Pieceworker::read(std::ifstream &file)
+void Pieceworker::read_from_file(std::ifstream &file)
 {
-    Worker::read(file);
+    Worker::read_from_file(file);
     file.read(reinterpret_cast<char *>(&paymentPerHour_), sizeof(int));
     file.read(reinterpret_cast<char *>(&workTime_), sizeof(int));
 }
 
-void Pieceworker::write(std::ofstream &file)
+void Pieceworker::write_to_file(std::ofstream &file)
 {
-    Worker::write(file);
+    Worker::write_to_file(file);
     file.write(reinterpret_cast<char *>(&paymentPerHour_), sizeof(int));
     file.write(reinterpret_cast<char *>(&workTime_), sizeof(int));
+}
+
+void Pieceworker::read_from_input(std::istream &is)
+{
+    Worker::read_from_input(is);
+    is >> paymentPerHour_ >> workTime_;
 }
 
 void Pieceworker::print(std::ostream &os) const
@@ -172,16 +186,22 @@ int Employee::getSalary() const { return salary_; }
 
 int Employee::calculateSalary() const { return salary_; }
 
-void Employee::read(std::ifstream &file)
+void Employee::read_from_file(std::ifstream &file)
 {
-    Worker::read(file);
+    Worker::read_from_file(file);
     file.read(reinterpret_cast<char *>(&salary_), sizeof(int));
 }
 
-void Employee::write(std::ofstream &file)
+void Employee::write_to_file(std::ofstream &file)
 {
-    Worker::write(file);
+    Worker::write_to_file(file);
     file.write(reinterpret_cast<char *>(&salary_), sizeof(int));
+}
+
+void Employee::read_from_input(std::istream &is)
+{
+    Worker::read_from_input(is);
+    is >> salary_;
 }
 
 void Employee::print(std::ostream &os) const
@@ -204,7 +224,7 @@ void Storage::store(Worker **toPreserve, size_t size)
     {
         type = Storage::getType(toPreserve[i]);
         file.write(reinterpret_cast<char *>(&type), sizeof(type)); // пишем тип объекта
-        toPreserve[i]->write(file);
+        toPreserve[i]->write_to_file(file);
     }
     file.close();
 }
@@ -238,7 +258,7 @@ Worker **Storage::read(size_t size) const
             result[i] = new Employee;
         }
 
-        result[i]->read(file);
+        result[i]->read_from_file(file);
     }
 
     file.close();
@@ -270,4 +290,10 @@ std::ostream &operator<<(std::ostream &os, const Worker &obj)
 {
     obj.print(os);
     return os;
+}
+
+std::istream &operator>>(std::istream &is, Worker &obj)
+{
+    obj.read_from_input(is);
+    return is;
 }

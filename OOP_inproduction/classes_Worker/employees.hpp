@@ -3,6 +3,11 @@
 #include <typeinfo>
 #include <iostream>
 
+std::ostream& setw12(std::ostream& os) {
+    os.width(12);
+    return os;
+}
+
 #define WORKER_TAKE_PARAMETERS const std::string &name, const std::string &position, int age
 #define WORKER_GIVE_PARAMETERS name, position, age
 
@@ -132,7 +137,7 @@ void Worker::read_from_input(std::istream &is)
 
 void Worker::print(std::ostream &os) const
 {
-    os << name_ << ' ' << position_ << ' ' << age_ << std::endl;
+    os << std::left << setw12 << name_ << setw12 << position_ << setw12 << age_ << '\n';
 }
 
 Pieceworker::Pieceworker() : Worker() {}
@@ -173,7 +178,7 @@ void Pieceworker::read_from_input(std::istream &is)
 void Pieceworker::print(std::ostream &os) const
 {
     Worker::print(os);
-    os << paymentPerHour_ << ' ' << workTime_ << std::endl;
+    os << setw12 << paymentPerHour_ << setw12 << workTime_ << std::endl;
 }
 
 Employee::Employee() : Worker() {}
@@ -207,7 +212,7 @@ void Employee::read_from_input(std::istream &is)
 void Employee::print(std::ostream &os) const
 {
     Worker::print(os);
-    os << salary_ << std::endl;
+    os << setw12 << salary_ << std::endl;
 }
 
 Storage::Storage(const std::string &fileName) : fileName_(fileName) {}

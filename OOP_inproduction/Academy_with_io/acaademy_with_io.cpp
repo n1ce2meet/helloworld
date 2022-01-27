@@ -63,9 +63,11 @@ public:
         os << last_name << delimeter << first_name << delimeter << age;
     }
 
-    virtual void read_from(std::istream &is)
+    virtual void read_from(std::istream &is, const char delimeter = ',')
     {
-        is >> last_name >> skip >> first_name >> skip >> age;
+        std::getline(is,last_name,delimeter);
+        std::getline(is,first_name,delimeter);
+        is >> age >> skip;
     }
 };
 
@@ -129,16 +131,19 @@ public:
         std::cout << "SDestructor:\t" << this << std::endl;
     }
 
+
     virtual void print(std::ostream &os = std::cout, const char delimeter = ',') const override
     {
         Human::print(os, delimeter);
         os << delimeter << speciality << delimeter << group << delimeter << rating << delimeter << attendance;
     }
 
-    virtual void read_from(std::istream &is) override
+    virtual void read_from(std::istream &is, const char delimeter = ',') override
     {
-        Human::read_from(is);
-        is >> skip >> speciality >> skip >> group >> skip >> rating >> skip >> attendance;
+        Human::read_from(is,delimeter);
+        std::getline(is,speciality,delimeter);
+        std::getline(is,group,delimeter);
+        is >> rating >> skip >> attendance >> skip;
     }
 };
 
@@ -200,14 +205,15 @@ public:
         os << '\n';
     }
 
-    virtual void read_from(std::istream &is) override
+    virtual void read_from(std::istream &is, const char delimeter = ',') override
     {
-        Human::read_from(is);
-        is >> skip >> speciality_ >> skip >> academicRank_ >> skip;
+        Human::read_from(is,delimeter);
+        std::getline(is,speciality_,delimeter);
+        std::getline(is,academicRank_,delimeter);
         while (is.peek() != '\n')
         {
             std::string temp;
-            is >> temp >> skip;
+            is >> temp;
             groups_.emplace_back(temp);
         }
     }
@@ -248,10 +254,10 @@ public:
         os << delimeter << graduationThesis_;
     }
 
-    virtual void read_from(std::istream &is) override
+    virtual void read_from(std::istream &is, const char delimeter = ',') override
     {
-        Student::read_from(is);
-        is >> skip >> graduationThesis_;
+        Student::read_from(is,delimeter);
+        is >> graduationThesis_;
     }
 };
 
@@ -261,10 +267,10 @@ public:
 #define TEACHER_EMPTY HUMAN_EMPTY, "", "", ""
 
 namespace HumansHash {
-    auto typeHuman = typeid(Human).hash_code();
-    auto typeStudent = typeid(Student).hash_code();
-    auto typeGraduate = typeid(Graduate).hash_code();
-    auto typeTeacher = typeid(Teacher).hash_code();
+    size_t typeHuman = typeid(Human).hash_code();
+    size_t typeStudent = typeid(Student).hash_code();
+    size_t typeGraduate = typeid(Graduate).hash_code();
+    size_t typeTeacher = typeid(Teacher).hash_code();
 }
 
 
@@ -297,9 +303,11 @@ void write(std::string path, const Array &arr)
 {
     std::ofstream file;
     file.open(path, std::ios_base::app);
+    if (!file)
+        throw "error file open";
     for (auto ph : arr)
     {
-        file << typeid(*ph).hash_code();
+        file << typeid(*ph).hash_code() << ';';
         ph->print(file, ';');
         file << '\n';
     }
@@ -311,17 +319,20 @@ std::list<Human *> read(std::string path)
     std::ifstream file;
     std::list<Human *> result{};
     file.open(path);
-    while (file.fail() || file.peek() == EOF)
-    {
-        size_t id;
-        file >> id;
+    if (!file)
+        throw "error file open";
 
+    size_t id;
+    while (!((file >> id >> skip).fail()) and file.peek() != EOF)
+    {
         Human *temp = HumanFactory(id);
+        temp->read_from(file, ';');
         result.emplace_back(temp);
     }
     file.close();
     return result;
 }
+
 
 int main()
 {
@@ -336,4 +347,12 @@ int main()
 
     Graduate grd("Pinkman", "Jessie", 25, "Chemistry", "WW_123", 85, 95, "abcd");
     grd.print();
+
+    std::list<Human *> hl = {&human, &stud, &grd};
+    write("test.txt", hl);
+    auto testl = read("test.txt");
+    for (auto ph : testl) {
+        ph->print();
+        std::cout << '\n';
+    }
 }

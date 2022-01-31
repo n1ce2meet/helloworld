@@ -80,8 +80,8 @@ public:
     {
         if (this == &other)
             return *this;
-        ForwardList<T> temp = std::move(*this);
-        new(this) ForwardList(other);
+        ForwardList<T> to_delete = std::move(*this);
+        new (this) ForwardList(other);
         return *this;
     }
 
@@ -94,12 +94,19 @@ public:
 
     void push_back(T data)
     {
-        Element<T> *iter = head_;
-        while (iter->pNext)
+        if (head_ != nullptr)
         {
-            iter = iter->pNext;
+            Element<T> *iter = head_;
+            while (iter->pNext)
+            {
+                iter = iter->pNext;
+            }
+            iter->pNext = new Element(data);
         }
-        iter->pNext = new Element(data);
+        else
+        {
+            head_ = new Element(data);
+        }
     }
 
     inline void pop_front()
@@ -111,15 +118,24 @@ public:
 
     void pop_back()
     {
-        Element<T> *iter = head_;
-        Element<T> *prev = nullptr;
-        while (iter->pNext)
+        if (head_ != nullptr)
         {
-            prev = iter;
-            iter = iter->pNext;
+            Element<T> *iter = head_;
+            Element<T> *prev = nullptr;
+            
+            while (iter->pNext)
+            {
+                prev = iter;
+                iter = iter->pNext;
+            }
+
+            if (prev)
+                prev->pNext = nullptr;
+            else
+                head_ = nullptr;
+
+            delete iter;
         }
-        prev->pNext = nullptr;
-        delete iter;
     }
 
     void insert(size_t index, T data)

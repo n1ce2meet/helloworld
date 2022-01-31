@@ -2,8 +2,7 @@
 
 #define tab "\t"
 
-template <class T>
-class ForwardList;
+template <class T> class ForwardList;
 
 template <class T>
 class Element
@@ -111,6 +110,7 @@ public:
 
     inline void pop_front()
     {
+        if (head_ == nullptr) return;
         Element<T> *temp = head_;
         head_ = head_->pNext;
         delete temp;
@@ -118,28 +118,37 @@ public:
 
     void pop_back()
     {
-        if (head_ != nullptr)
-        {
-            Element<T> *iter = head_;
-            Element<T> *prev = nullptr;
+        // if (head_ != nullptr)
+        // {
+        //     Element<T> *iter = head_;
+        //     Element<T> *prev = nullptr;
             
-            while (iter->pNext)
-            {
-                prev = iter;
-                iter = iter->pNext;
-            }
+        //     while (iter->pNext)
+        //     {
+        //         prev = iter;
+        //         iter = iter->pNext;
+        //     }
 
-            if (prev)
-                prev->pNext = nullptr;
-            else
-                head_ = nullptr;
+        //     if (prev)
+        //         prev->pNext = nullptr;
+        //     else
+        //         head_ = nullptr;
 
-            delete iter;
-        }
+        //     delete iter;
+        // }
+
+        if (head_ == nullptr) return;
+        if (head_->pNext == nullptr) return this->pop_front();
+
+        Element<T> * iter = head_;
+        while(iter->pNext->pNext) iter = iter->pNext;
+        delete iter->pNext;
+        iter->pNext = nullptr; 
     }
 
     void insert(size_t index, T data)
     {
+        if(index == 0 or head_ == nullptr) return this->push_front(data);
         Element<T> *iter = this->advance(head_, index - 1);
         Element<T> *temp = iter->pNext;
         iter->pNext = new Element(data, temp);
@@ -147,6 +156,7 @@ public:
 
     void erase(size_t index)
     {
+        if (index == 0) return this->pop_front;
         Element<T> *iter = this->advance(head_, index - 1);
         if (iter->pNext == nullptr)
             throw "No element at given index";

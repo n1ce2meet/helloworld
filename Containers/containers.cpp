@@ -156,7 +156,7 @@ public:
 
     void erase(size_t index)
     {
-        if (index == 0) return this->pop_front;
+        if (index == 0) return this->pop_front();
         Element<T> *iter = this->advance(head_, index - 1);
         if (iter->pNext == nullptr)
             throw "No element at given index";

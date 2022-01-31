@@ -2,7 +2,8 @@
 
 #define tab "\t"
 
-template <class T> class ForwardList;
+template <class T>
+class ForwardList;
 
 template <class T>
 class Element
@@ -23,7 +24,7 @@ public:
     friend class ForwardList<T>;
 };
 
-template <class T> 
+template <class T>
 class ForwardList
 {
     Element<T> *head_;
@@ -41,7 +42,6 @@ class ForwardList
     }
 
 public:
-
     ForwardList()
     {
         head_ = nullptr;
@@ -64,6 +64,25 @@ public:
             this->pop_front();
         }
         std::cout << "LDestructor:\t" << this << std::endl;
+    }
+
+    ForwardList(ForwardList<T> &&) = default;
+    ForwardList(ForwardList<T> const &other) : ForwardList()
+    {
+        for (Element<T> *iter = other.head_; iter != nullptr; iter = iter->pNext)
+        {
+            this->push_front(iter->data_);
+        }
+    }
+
+    ForwardList<T> &operator=(ForwardList<T> &&) = default;
+    ForwardList<T> &operator=(const ForwardList<T> &other)
+    {
+        if (this == &other)
+            return *this;
+        ForwardList<T> temp = std::move(*this);
+        new(this) ForwardList(other);
+        return *this;
     }
 
     inline void push_front(T data)
@@ -105,14 +124,14 @@ public:
 
     void insert(size_t index, T data)
     {
-        Element<T> *iter = this->advance(head_, index-1);
+        Element<T> *iter = this->advance(head_, index - 1);
         Element<T> *temp = iter->pNext;
         iter->pNext = new Element(data, temp);
     }
 
     void erase(size_t index)
     {
-        Element<T> *iter = this->advance(head_, index-1);
+        Element<T> *iter = this->advance(head_, index - 1);
         if (iter->pNext == nullptr)
             throw "No element at given index";
         Element<T> *temp = iter->pNext->pNext;
@@ -137,16 +156,27 @@ public:
 int main()
 {
     ForwardList<int> l{};
-    for (size_t i = 0 ; i < 12 ; ++i) {
+    for (size_t i = 0; i < 12; ++i)
+    {
         l.push_front(i);
     }
 
-    l.erase(5);
-    l.insert(7, 7);
-    l.pop_back();
-    l.pop_front();
-    l.push_front(521);
-    l.push_back(24);
+    ForwardList<int> p{};
+    for (size_t i = 12; i < 24; ++i)
+    {
+        p.push_front(i);
+    }
+
+    l = p;
 
     l.print();
+
+    // l.erase(5);
+    // l.insert(7, 7);
+    // l.pop_back();
+    // l.pop_front();
+    // l.push_front(521);
+    // l.push_back(24);
+
+    // l.print();
 }

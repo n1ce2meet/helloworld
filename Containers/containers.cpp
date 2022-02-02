@@ -49,9 +49,16 @@ public:
         std::cout << "LConstructor:\t" << this << std::endl;
     }
 
-    ForwardList(std::initializer_list<T> il) {
-        for (T i : il) {
-            this->push_front(il);
+    ForwardList(size_t size) : ForwardList() {
+        while (size_ != size)  {
+            this->push_front(T());
+        }
+
+    }
+
+    ForwardList(std::initializer_list<T> il) : ForwardList() {
+        for (T val : il) {
+            this->push_front(val);
         }
     }
 
@@ -65,8 +72,9 @@ public:
     }
 
     ForwardList(ForwardList<T> &&) = default;
-    ForwardList(ForwardList<T> const &other) : ForwardList() , size_(other.size_)
+    ForwardList(ForwardList<T> const &other) : ForwardList()
     {
+        size_ = other.size_;
         for (Element<T> *iter = other.head_; iter != nullptr; iter = iter->pNext)
         {
             this->push_front(iter->data_);
@@ -177,7 +185,7 @@ public:
     void pop_back() {
         if (head_ == nullptr) return;
         if (head_->pNext == nullptr) return this->pop_front();
-        Element<T> * iter = ForwardList::advance(head_, size - 2);
+        Element<T> * iter = ForwardList::advance(head_, size_ - 2);
         delete iter->pNext;
         iter->pNext = nullptr;
 
@@ -207,8 +215,12 @@ public:
         --this->size_;
     }
 
-    Element & operator[](size_t index){
-        return *ForwardList::advance(head_, index);
+    T operator[](size_t index) const {
+        return ForwardList::advance(head_, index)->data_;
+    }
+
+    T & operator[](size_t index) {
+        return ForwardList::advance(head_, index)->data_;
     }
 
     bool is_empty() const { return !head_; }
@@ -225,30 +237,83 @@ public:
     }
 };
 
+
+// #define BASE_CHECK
+// #define DESTRUCTOR_CHECK
+// #define HOME_WORK_1
+// #define HOME_WORK_2
+
 int main()
 {
-    ForwardList<int> l{};
-    for (size_t i = 0; i < 12; ++i)
-    {
-        l.push_front(i);
-    }
+#ifdef BASE_CHECK
+	int n;
+	std::cout << "Enter list size: "; std::cin >> n;
+	ForwardList<int> list;
+	list.pop_front();
+	for (int i = 0; i < n; i++)
+	{
+		//list.push_front(rand() % 100);
+		list.push_back(rand() % 100);
+	}
+	list.print();
+	//list.push_back(123);
+	//list.pop_front();
+	//list.pop_back();
 
-    ForwardList<int> p{};
-    for (size_t i = 12; i < 24; ++i)
-    {
-        p.push_front(i);
-    }
+	int index;
+	int value;
+	std::cout << "Enter index INSERT element: "; std::cin >> index;
+	std::cout << "Enter value INSERT element: "; std::cin >> value;
 
-    l = p;
+	list.insert(index, value);
+	list.print();
 
-    l.print();
+	std::cout << "Enter index ERASE element: "; std::cin >> index;
+	list.erase(index);
+	list.print();
 
-    l.erase(5);
-    l.insert(7, 7);
-    l.pop_back();
-    l.pop_front();
-    l.push_front(521);
-    l.push_back(24);
+#endif // BASE_CHECK
 
-    l.print();
+	// ForwardList<int> list1;
+	// list1.push_back(3);
+	// list1.push_back(5);
+	// list1.push_back(8);
+	// list1.push_back(13);
+	// list1.push_back(21);
+    // list1.pop_back();
+    // list1.pop_front();
+	// list1.print();
+
+#ifdef DESTRUCTOR_CHECK
+	int n;
+	std::cout << "Enter list size: "; std::cin >> n;
+	ForwardList<int> list;
+	for (int i = 0; i < n; i++)
+	{
+		list.push_front(rand()%100);
+	}
+	//std::cout << "Список заполнен" << std::endl;
+	list.print();
+#endif // DESTRUCTOR_CHECK
+
+#ifdef HOME_WORK_1
+	int n;
+	std::cout << "Enter list size: "; std::cin >> n;
+	ForwardList<int> list(n);
+	for (int i = 0; i < n; i++)
+	{
+		list[i] = rand() % 100;
+	}
+	for (int i = 0; i < n; i++)
+	{
+		std::cout << list[i] << tab;
+	}
+	std::cout << std::endl;
+#endif // HOME_WORK_1
+
+#ifdef HOME_WORK_2
+	ForwardList list = { 3,5,8,13,21 };
+	list.print();
+#endif // HOME_WORK_2
+
 }

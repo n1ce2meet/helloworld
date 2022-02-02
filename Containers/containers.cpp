@@ -2,7 +2,8 @@
 
 #define tab "\t"
 
-template <class T> class ForwardList;
+template <class T>
+class ForwardList;
 
 template <class T>
 class Element
@@ -27,37 +28,29 @@ template <class T>
 class ForwardList
 {
     Element<T> *head_;
+    size_t size_;
     using value_type = T;
 
     Element<T> *advance(Element<T> *iter, size_t distance)
     {
+        if (distance > size_)
+                throw "Forward list out of bounds";
+
         for (size_t i = 0; i < distance; ++i)
         {
-            if (iter == nullptr)
-                throw "Forward list out of bounds";
             iter = iter->pNext;
         }
         return iter;
     }
 
 public:
-    ForwardList()
+    ForwardList() : head_(nullptr), size_(0)
     {
-        head_ = nullptr;
         std::cout << "LConstructor:\t" << this << std::endl;
     }
 
     ~ForwardList()
     {
-        // Element<T> *temp;
-
-        // while (head_)
-        // {
-        //     temp = head_;
-        //     head_ = head_->pNext;
-        //     delete temp;
-        // }
-
         while (head_)
         {
             this->pop_front();
@@ -66,7 +59,7 @@ public:
     }
 
     ForwardList(ForwardList<T> &&) = default;
-    ForwardList(ForwardList<T> const &other) : ForwardList()
+    ForwardList(ForwardList<T> const &other) : ForwardList() , size_(other.size_)
     {
         for (Element<T> *iter = other.head_; iter != nullptr; iter = iter->pNext)
         {
@@ -89,80 +82,123 @@ public:
         Element<T> *New = new Element(data);
         New->pNext = head_;
         head_ = New;
+
+        ++this->size_;
     }
 
-    void push_back(T data)
-    {
-        if (head_ != nullptr)
-        {
-            Element<T> *iter = head_;
-            while (iter->pNext)
-            {
-                iter = iter->pNext;
-            }
+// WITHOUT SIZE push_back
+// IMPL 1
+
+    // void push_back(T data)
+    // {
+    //     if (head_ != nullptr)
+    //     {
+    //         Element<T> *iter = head_;
+    //         while (iter->pNext)
+    //         {
+    //             iter = iter->pNext;
+    //         }
+    //         iter->pNext = new Element(data);
+    //     }
+    //     else
+    //     {
+    //         head_ = new Element(data);
+    //     }
+    // }
+
+    void push_back(T data) {
+        if (head_ == nullptr) head_ = new Element(data);
+        else {
+            Element<T> *iter = ForwardList::advance(head_, size_ - 1);
             iter->pNext = new Element(data);
         }
-        else
-        {
-            head_ = new Element(data);
-        }
+
+        ++this->size_;
     }
 
     inline void pop_front()
     {
-        if (head_ == nullptr) return;
+        if (head_ == nullptr)
+            return;
+
         Element<T> *temp = head_;
         head_ = head_->pNext;
         delete temp;
+
+        --this->size_;
     }
 
-    void pop_back()
-    {
-        // if (head_ != nullptr)
-        // {
-        //     Element<T> *iter = head_;
-        //     Element<T> *prev = nullptr;
-            
-        //     while (iter->pNext)
-        //     {
-        //         prev = iter;
-        //         iter = iter->pNext;
-        //     }
+//     WITHOUT SIZE pop_back
+//     IMPL 1
 
-        //     if (prev)
-        //         prev->pNext = nullptr;
-        //     else
-        //         head_ = nullptr;
+    // void pop_back() {
 
-        //     delete iter;
-        // }
+    //     if (head_ != nullptr)
+    //     {
+    //         Element<T> *iter = head_;
+    //         Element<T> *prev = nullptr;
 
+    //         while (iter->pNext)
+    //         {
+    //             prev = iter;
+    //             iter = iter->pNext;
+    //         }
+
+    //         if (prev)
+    //             prev->pNext = nullptr;
+    //         else
+    //             head_ = nullptr;
+
+    //         delete iter;
+    //     }
+    // }
+
+
+//     WITHOUT SIZE pop_back
+//     IMPL 2
+
+    // void pop_back()
+    // {
+    //     if (head_ == nullptr) return;
+    //     if (head_->pNext == nullptr) return this->pop_front();
+
+    //     Element<T> * iter = head_;
+    //     while(iter->pNext->pNext) iter = iter->pNext;
+    //     delete iter->pNext;
+    //     iter->pNext = nullptr;
+    // }
+
+    void pop_back() {
         if (head_ == nullptr) return;
         if (head_->pNext == nullptr) return this->pop_front();
-
-        Element<T> * iter = head_;
-        while(iter->pNext->pNext) iter = iter->pNext;
+        Element<T> * iter = ForwardList::advance(head_, size - 2);
         delete iter->pNext;
-        iter->pNext = nullptr; 
+        iter->pNext = nullptr;
+
+        --this->size_;
     }
 
     void insert(size_t index, T data)
     {
-        if(index == 0 or head_ == nullptr) return this->push_front(data);
-        Element<T> *iter = this->advance(head_, index - 1);
+        if (index == 0 or head_ == nullptr)
+            return this->push_front(data);
+        Element<T> *iter = ForwardList::advance(head_, index - 1);
         Element<T> *temp = iter->pNext;
         iter->pNext = new Element(data, temp);
+        ++this->size_;
     }
 
     void erase(size_t index)
     {
-        if (index == 0) return this->pop_front();
-        Element<T> *iter = this->advance(head_, index - 1);
+        if (index == 0)
+            return this->pop_front();
+        Element<T> *iter = ForwardList::advance(head_, index - 1);
         if (iter->pNext == nullptr)
             throw "No element at given index";
         Element<T> *temp = iter->pNext->pNext;
         delete iter->pNext;
         iter->pNext = temp;
+        --this->size_;
     }
 
     bool is_empty() const { return !head_; }
@@ -197,12 +233,12 @@ int main()
 
     l.print();
 
-    // l.erase(5);
-    // l.insert(7, 7);
-    // l.pop_back();
-    // l.pop_front();
-    // l.push_front(521);
-    // l.push_back(24);
+    l.erase(5);
+    l.insert(7, 7);
+    l.pop_back();
+    l.pop_front();
+    l.push_front(521);
+    l.push_back(24);
 
-    // l.print();
+    l.print();
 }

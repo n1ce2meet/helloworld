@@ -49,6 +49,12 @@ public:
         std::cout << "LConstructor:\t" << this << std::endl;
     }
 
+    ForwardList(std::initializer_list<T> il) {
+        for (T i : il) {
+            this->push_front(il);
+        }
+    }
+
     ~ForwardList()
     {
         while (head_)
@@ -199,6 +205,10 @@ public:
         delete iter->pNext;
         iter->pNext = temp;
         --this->size_;
+    }
+
+    Element & operator[](size_t index){
+        return *ForwardList::advance(head_, index);
     }
 
     bool is_empty() const { return !head_; }

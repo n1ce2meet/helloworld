@@ -1,9 +1,15 @@
 #include <iostream>
 
 #define tab "\t"
+// #define ENABLE_PTR_WRAPPER
 
 template <class T>
 class ForwardList;
+
+#ifdef ENABLE_PTR_WRAPPER
+template <class EL>
+class pEL_wrapper;
+#endif
 
 template <class T>
 class Element
@@ -22,7 +28,33 @@ public:
     }
 
     friend class ForwardList<T>;
+
+#ifdef ENABLE_PTR_WRAPPER
+    friend class pEL_wrapper<Element<T>>;
+#endif
+
 };
+
+#ifdef ENABLE_PTR_WRAPPER
+template <class EL>
+class FL_iterator {
+    EL * ptr = nullptr;
+    
+    // ...
+
+    EL * operator++() {
+        return ptr = ptr->pNext;
+    }
+
+    EL * operator++(int) {
+        EL * temp = ptr;
+        ptr = ptr->pNext;
+        return temp;
+    }
+
+    // ...
+};
+#endif
 
 template <class T>
 class ForwardList
@@ -34,7 +66,7 @@ class ForwardList
     Element<T> *advance(Element<T> *iter, size_t distance)
     {
         if (distance > size_)
-                throw "Forward list out of bounds";
+            throw "Forward list out of bounds";
 
         for (size_t i = 0; i < distance; ++i)
         {
@@ -49,15 +81,18 @@ public:
         std::cout << "LConstructor:\t" << this << std::endl;
     }
 
-    ForwardList(size_t size) : ForwardList() {
-        while (size_ != size)  {
+    ForwardList(size_t size) : ForwardList()
+    {
+        while (size_ != size)
+        {
             this->push_front(T());
         }
-
     }
 
-    ForwardList(std::initializer_list<T> il) : ForwardList() {
-        for (T val : il) {
+    ForwardList(std::initializer_list<T> il) : ForwardList()
+    {
+        for (T val : il)
+        {
             this->push_front(val);
         }
     }
@@ -93,15 +128,17 @@ public:
 
     inline void push_front(T data)
     {
-        Element<T> *New = new Element(data);
-        New->pNext = head_;
-        head_ = New;
+        // Element<T> *New = new Element(data);
+        // New->pNext = head_;
+        // head_ = New;
+
+        head_ = new Element(data, head_);
 
         ++this->size_;
     }
 
-// WITHOUT SIZE push_back
-// IMPL 1
+    // WITHOUT SIZE push_back
+    // IMPL 1
 
     // void push_back(T data)
     // {
@@ -120,9 +157,12 @@ public:
     //     }
     // }
 
-    void push_back(T data) {
-        if (head_ == nullptr) head_ = new Element(data);
-        else {
+    void push_back(T data)
+    {
+        if (head_ == nullptr)
+            head_ = new Element(data);
+        else
+        {
             Element<T> *iter = ForwardList::advance(head_, size_ - 1);
             iter->pNext = new Element(data);
         }
@@ -142,8 +182,8 @@ public:
         --this->size_;
     }
 
-//     WITHOUT SIZE pop_back
-//     IMPL 1
+    //     WITHOUT SIZE pop_back
+    //     IMPL 1
 
     // void pop_back() {
 
@@ -167,9 +207,8 @@ public:
     //     }
     // }
 
-
-//     WITHOUT SIZE pop_back
-//     IMPL 2
+    //     WITHOUT SIZE pop_back
+    //     IMPL 2
 
     // void pop_back()
     // {
@@ -182,10 +221,13 @@ public:
     //     iter->pNext = nullptr;
     // }
 
-    void pop_back() {
-        if (head_ == nullptr) return;
-        if (head_->pNext == nullptr) return this->pop_front();
-        Element<T> * iter = ForwardList::advance(head_, size_ - 2);
+    void pop_back()
+    {
+        if (head_ == nullptr)
+            return;
+        if (head_->pNext == nullptr)
+            return this->pop_front();
+        Element<T> *iter = ForwardList::advance(head_, size_ - 2);
         delete iter->pNext;
         iter->pNext = nullptr;
 
@@ -197,8 +239,8 @@ public:
         if (index == 0 or head_ == nullptr)
             return this->push_front(data);
         Element<T> *iter = ForwardList::advance(head_, index - 1);
-        Element<T> *temp = iter->pNext;
-        iter->pNext = new Element(data, temp);
+        // Element<T> *temp = iter->pNext;
+        iter->pNext = new Element(data, iter->pNext);
         ++this->size_;
     }
 
@@ -215,11 +257,53 @@ public:
         --this->size_;
     }
 
-    T operator[](size_t index) const {
+    void unique() //как быстрее?
+    {
+        Element<T> *to_unique = this->head_;
+        Element<T> *to_find = nullptr;
+
+        for (size_t unique_idx = 0; to_unique; ++unique_idx, to_unique = to_unique->pNext)
+        {
+            to_find = to_unique->pNext;
+
+            for (size_t idx_to_remove = unique_idx + 1; to_find; ++idx_to_remove)
+            {
+                if (to_unique->data_ == to_find->data_)
+                {
+                    to_find = to_find->pNext;
+                    this->erase(idx_to_remove);
+                    --idx_to_remove;
+                }
+                else
+                {
+                    to_find = to_find->pNext;
+                }
+            }
+        }
+    }
+
+    void reverse()
+    {
+        Element<T> *prev = nullptr;
+        Element<T> *next = this->head_;
+        Element<T> *temp = nullptr;
+        for (size_t idx = 0; idx < size_; ++idx)
+        {
+            temp = next->pNext;
+            next->pNext = prev;
+            prev = next;
+            next = temp;
+        }
+        this->head_ = prev;
+    }
+
+    T operator[](size_t index) const
+    {
         return ForwardList::advance(head_, index)->data_;
     }
 
-    T & operator[](size_t index) {
+    T &operator[](size_t index)
+    {
         return ForwardList::advance(head_, index)->data_;
     }
 
@@ -237,7 +321,6 @@ public:
     }
 };
 
-
 // #define BASE_CHECK
 // #define DESTRUCTOR_CHECK
 // #define HOME_WORK_1
@@ -246,74 +329,83 @@ public:
 int main()
 {
 #ifdef BASE_CHECK
-	int n;
-	std::cout << "Enter list size: "; std::cin >> n;
-	ForwardList<int> list;
-	list.pop_front();
-	for (int i = 0; i < n; i++)
-	{
-		//list.push_front(rand() % 100);
-		list.push_back(rand() % 100);
-	}
-	list.print();
-	//list.push_back(123);
-	//list.pop_front();
-	//list.pop_back();
+    int n;
+    std::cout << "Enter list size: ";
+    std::cin >> n;
+    ForwardList<int> list;
+    list.pop_front();
+    for (int i = 0; i < n; i++)
+    {
+        //list.push_front(rand() % 100);
+        list.push_back(rand() % 100);
+    }
+    list.print();
+    //list.push_back(123);
+    //list.pop_front();
+    //list.pop_back();
 
-	int index;
-	int value;
-	std::cout << "Enter index INSERT element: "; std::cin >> index;
-	std::cout << "Enter value INSERT element: "; std::cin >> value;
+    int index;
+    int value;
+    std::cout << "Enter index INSERT element: ";
+    std::cin >> index;
+    std::cout << "Enter value INSERT element: ";
+    std::cin >> value;
 
-	list.insert(index, value);
-	list.print();
+    list.insert(index, value);
+    list.print();
 
-	std::cout << "Enter index ERASE element: "; std::cin >> index;
-	list.erase(index);
-	list.print();
+    std::cout << "Enter index ERASE element: ";
+    std::cin >> index;
+    list.erase(index);
+    list.print();
 
 #endif // BASE_CHECK
 
-	// ForwardList<int> list1;
-	// list1.push_back(3);
-	// list1.push_back(5);
-	// list1.push_back(8);
-	// list1.push_back(13);
-	// list1.push_back(21);
+    // ForwardList<int> list1;
+    // list1.push_back(3);
+    // list1.push_back(5);
+    // list1.push_back(8);
+    // list1.push_back(13);
+    // list1.push_back(21);
     // list1.pop_back();
     // list1.pop_front();
-	// list1.print();
+    // list1.print();
 
 #ifdef DESTRUCTOR_CHECK
-	int n;
-	std::cout << "Enter list size: "; std::cin >> n;
-	ForwardList<int> list;
-	for (int i = 0; i < n; i++)
-	{
-		list.push_front(rand()%100);
-	}
-	//std::cout << "Список заполнен" << std::endl;
-	list.print();
+    int n;
+    std::cout << "Enter list size: ";
+    std::cin >> n;
+    ForwardList<int> list;
+    for (int i = 0; i < n; i++)
+    {
+        list.push_front(rand() % 100);
+    }
+    //std::cout << "Список заполнен" << std::endl;
+    list.print();
 #endif // DESTRUCTOR_CHECK
 
 #ifdef HOME_WORK_1
-	int n;
-	std::cout << "Enter list size: "; std::cin >> n;
-	ForwardList<int> list(n);
-	for (int i = 0; i < n; i++)
-	{
-		list[i] = rand() % 100;
-	}
-	for (int i = 0; i < n; i++)
-	{
-		std::cout << list[i] << tab;
-	}
-	std::cout << std::endl;
+    int n;
+    std::cout << "Enter list size: ";
+    std::cin >> n;
+    ForwardList<int> list(n);
+    for (int i = 0; i < n; i++)
+    {
+        list[i] = rand() % 100;
+    }
+    for (int i = 0; i < n; i++)
+    {
+        std::cout << list[i] << tab;
+    }
+    std::cout << std::endl;
 #endif // HOME_WORK_1
 
 #ifdef HOME_WORK_2
-	ForwardList list = { 3,5,8,13,21 };
-	list.print();
+    ForwardList<int> list = {3, 5, 8, 13, 3, 21, 5, 5, 6, 5, 13};
+    list.unique();
+    list.reverse();
+    list.print();
 #endif // HOME_WORK_2
 
+std::cout << typeid(Element<int>).name() << std::endl;
 }

@@ -160,13 +160,9 @@ public:
     void push_back(T data)
     {
         if (head_ == nullptr)
-            head_ = new Element(data);
-        else
-        {
-            Element<T> *iter = ForwardList::advance(head_, size_ - 1);
-            iter->pNext = new Element(data);
-        }
-
+            return this->push_front(data);
+        Element<T> *iter = ForwardList::advance(head_, size_ - 1);
+        iter->pNext = new Element(data);
         ++this->size_;
     }
 

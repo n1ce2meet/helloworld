@@ -406,6 +406,4 @@ int main()
     list.reverse();
     list.print();
 #endif // HOME_WORK_2
-
-std::cout << typeid(Element<int>).name() << std::endl;
 }

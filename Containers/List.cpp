@@ -192,7 +192,7 @@ public:
         if (_head)
             _head->prev = nullptr;
         else
-            _head = _tail;
+            _tail = _head;
 
         delete tmp;
         --_list_size;
@@ -216,10 +216,10 @@ public:
 
     void insert(value_type data, size_t idx)
     {
-        if (_head == nullptr or _head == _tail or idx == _list_size - 1)
-            return push_back(data);
         if (idx == 0)
             return push_front(data);
+        if (idx == _list_size - 1)
+            return push_back(data);
         _Node *prev_tmp = fasttrack(idx - 1);
         _Node *next_tmp = prev_tmp->next;
         prev_tmp->next = new _Node(data, next_tmp, prev_tmp);
@@ -229,7 +229,11 @@ public:
     }
 
     void erase(size_t idx)
-    {
+    {   
+        if (idx == 0)
+            return pop_front(data);
+        if (idx == _list_size - 1)
+            return pop_back(data);
         _Node *prev_tmp = fasttrack(idx - 1);
         _Node *next_tmp = prev_tmp->next->next;
         delete prev_tmp->next;
@@ -239,7 +243,7 @@ public:
         --_list_size;
     }
 
-    bool empty()
+    bool empty() const
     {
         return _head == nullptr;
     }
@@ -287,8 +291,7 @@ public:
     template <class It>
     static auto advance(It iter, size_t distance) -> decltype(iter.base().data())
     {
-        for (; distance; ++iter, --distance)
-            ;
+        for (; distance; ++iter, --distance);
         return iter.base().data();
     }
 
@@ -317,7 +320,7 @@ void print(It start, It end)
     std::cout << std::endl;
 }
 
-#define BASE_CHECK
+//#define BASE_CHECK
 
 int main()
 {
@@ -345,4 +348,7 @@ int main()
     print(list.begin(), list.end());
     print(list.rbegin(), list.rend());
 #endif // BASE_CHECK
+
+List<int> list = { 3, 5, 8, 13, 21 };
+for(int i:list) std::cout << i << tab; std::cout << std::endl;
 }

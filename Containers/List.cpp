@@ -37,7 +37,7 @@ public:
         return *this;
     }
 
-    _Node *data()
+    _Node *ptr()
     {
         return _p;
     }
@@ -231,9 +231,9 @@ public:
     void erase(size_t idx)
     {   
         if (idx == 0)
-            return pop_front(data);
+            return pop_front();
         if (idx == _list_size - 1)
-            return pop_back(data);
+            return pop_back();
         _Node *prev_tmp = fasttrack(idx - 1);
         _Node *next_tmp = prev_tmp->next->next;
         delete prev_tmp->next;
@@ -289,10 +289,10 @@ public:
     }
 
     template <class It>
-    static auto advance(It iter, size_t distance) -> decltype(iter.base().data())
+    static auto advance(It iter, size_t distance) -> decltype(iter.base().ptr())
     {
         for (; distance; ++iter, --distance);
-        return iter.base().data();
+        return iter.base().ptr();
     }
 
     _Node *fasttrack(size_t idx) const

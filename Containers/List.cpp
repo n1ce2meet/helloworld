@@ -84,6 +84,17 @@ public:
     }
 };
 
+template <class _Iterator>
+class _List_reverse_iterator_impl : public std::reverse_iterator<_Iterator> {
+public:
+
+    using std::reverse_iterator<_Iterator>::reverse_iterator;
+
+    typename std::reverse_iterator<_Iterator>::reference operator*() {
+        return *std::reverse_iterator<_Iterator>::current;
+    }
+};
+
 template <class _Tp>
 class List
 {
@@ -98,8 +109,8 @@ public:
     using value_type = _Tp;
     using iterator = _List_iterator_impl<_Tp>;
     using const_iterator = _List_iterator_impl<const _Tp, _List_node<_Tp>>;
-    using reverse_iterator = std::reverse_iterator<iterator>;
-    using reverse_const_iterator = std::reverse_iterator<const_iterator>;
+    using reverse_iterator = _List_reverse_iterator_impl<iterator>;
+    using reverse_const_iterator = _List_reverse_iterator_impl<const_iterator>;
 
     List() : _head(nullptr), _tail(nullptr), _list_size(0) {}
 
@@ -315,12 +326,12 @@ void print(It start, It end)
 {
     for (; start != end; ++start)
     {
-        std::cerr << *start.base() << tab;
+        std::cerr << *start << tab;
     }
     std::cout << std::endl;
 }
 
-//#define BASE_CHECK
+#define BASE_CHECK
 
 int main()
 {
@@ -349,6 +360,6 @@ int main()
     print(list.rbegin(), list.rend());
 #endif // BASE_CHECK
 
-List<int> list = { 3, 5, 8, 13, 21 };
-for(int i:list) std::cout << i << tab; std::cout << std::endl;
+// List<int> list = { 3, 5, 8, 13, 21 };
+// for(int i:list) std::cout << i << tab; std::cout << std::endl;
 }

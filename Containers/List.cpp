@@ -8,7 +8,7 @@ struct _List_node
     _List_node *next;
     _List_node *prev;
 
-    _List_node(_Tp somedata = _Tp(), _List_node *pNext = nullptr, _List_node *pPrev = nullptr)
+    explicit _List_node(_Tp somedata = _Tp(), _List_node *pNext = nullptr, _List_node *pPrev = nullptr)
         : data(somedata), next(pNext), prev(pPrev) {}
 };
 
